@@ -31,6 +31,6 @@ if __name__ == "__main__":
 
         # Get next frame (check for ESC key)
         rval, frame = vc.read()
-        key = cv.waitKey(200)
+        key = cv.waitKey(2000)
         if key == 27: break # exit on ESC
     cv.destroyWindow("preview")
