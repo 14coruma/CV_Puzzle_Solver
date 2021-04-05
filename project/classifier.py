@@ -70,7 +70,7 @@ if __name__ == "__main__":
     img_train, img_test, y_train, y_test = train_test_split(
             img, y, test_size=0.33, random_state=0, stratify=y)
 
-    #  # Train classifier
+    # Train classifier
     descripts = sift_features(img_train)
     visual_words, radius = cluster_words(100, [val for row in descripts for val in row])
     X_train = build_bovw(img_train, visual_words, radius)
