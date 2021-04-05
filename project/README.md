@@ -1,8 +1,9 @@
 # Project
 P556 Final Project
+
 Andrew Corum
 
-TODO:
+**TODO:**
 - [x] Topic idea
 - [x] Project proposal
 - [ ] Progress report
