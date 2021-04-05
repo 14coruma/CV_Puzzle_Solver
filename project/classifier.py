@@ -3,6 +3,7 @@ import numpy as np
 import os
 
 from scipy.spatial import distance
+from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 
 import cv2 as cv
@@ -16,13 +17,17 @@ def image_name_and_class(loc):
     return images, labels
 
 def orb_features(images):
-    descripts = []
-    orb = cv.ORB_create()
+    descripts = None
+    maxfeat, nfeat = 500, 100
+    orb = cv.ORB_create(nfeatures=maxfeat)
     for img in images:
-        keypts = orb.detect(img, None)
-        keypts, des = orb.compute(img, keypts)
-        descripts.append(des)
+        keypts, des = orb.detectAndCompute(img, None)
+        descripts = des[:nfeat] if descripts is None else descripts + des[:nfeat]
     return descripts
+
+def cluster_words(k, descripts):
+    kmeans = KMeans(n_clusters=k, random_state=0).fit(descripts)
+    return kmeans.cluster_centers_
 
 def NN(X_test, X_train, y_train):
     y_pred = []
@@ -45,7 +50,7 @@ if __name__ == "__main__":
 
     #  # Train classifier
     descripts = orb_features(img_train)
-    #  visual_words = determine_words(k, descripts)
+    visual_words = cluster_words(100, descripts)
     #  X_train = build_bovw(img_train, visual_words)
 #  
     #  # Test classifier
