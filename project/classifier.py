@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import math
+from numba import njit
 import numpy as np
 import os
 
@@ -90,6 +91,7 @@ def predict(model, img):
 
 if __name__ == "__main__":
     # Grab data
+    print("Grabbing images")
     img, y = image_name_and_class('./data')
     enc = LabelEncoder()
     y = enc.fit_transform(['None'] + y)[1:]
@@ -97,12 +99,17 @@ if __name__ == "__main__":
             img, y, test_size=0.33, random_state=0, stratify=y)
 
     # Train classifier
+    print("SIFT")
     descripts = sift_features(img_train)
+    print("Cluster")
     visual_words, radius = cluster_words(100, [val for row in descripts for val in row])
+    print("Hist")
     X_train = build_bovw(img_train, visual_words, radius)
   
     # Test classifier
+    print("Hist2")
     X_test = build_bovw(img_test, visual_words, radius) 
+    print("Bayes")
     y_pred, y_prob = NB(X_test, X_train, y_train)
     print(y_prob)
 
