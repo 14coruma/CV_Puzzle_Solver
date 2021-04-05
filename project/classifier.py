@@ -7,6 +7,7 @@ from scipy.spatial import distance
 from sklearn.cluster import KMeans
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import LabelEncoder
 
 import cv2 as cv
@@ -62,11 +63,19 @@ def NN(X_test, X_train, y_train):
         y_pred.append(best_class)
     return y_pred
 
+def NB(X_test, X_train, y_train):
+    gnb = GaussianNB()
+    gnb.fit(X_train, y_train)
+    y_pred = gnb.predict(X_test)
+    prob = gnb.predict_log_proba(X_test)
+    print(prob[0])
+    return y_pred, [max(prob[i]) for i in range(len(y_pred))]
+
 def train(data_loc):
     # Grab data
     img, y = image_name_and_class('./data')
     enc = LabelEncoder()
-    y = enc.fit_transform(y)
+    y = enc.fit_transform(['None'] + y)[1:]
     # Train classifier
     descripts = sift_features(img)
     visual_words, radius = cluster_words(100, [val for row in descripts for val in row])
@@ -75,13 +84,15 @@ def train(data_loc):
 
 def predict(model, img):
     X = build_bovw([img], model["visual_words"], model["radius"])
-    return model["enc"].inverse_transform([NN(X, model["data"], model["labels"])[0]])
+    pred, prob = NB(X, model["data"], model["labels"])
+    return model["enc"].inverse_transform(pred)[0]
+
 
 if __name__ == "__main__":
     # Grab data
     img, y = image_name_and_class('./data')
     enc = LabelEncoder()
-    y = enc.fit_transform(y)
+    y = enc.fit_transform(['None'] + y)[1:]
     img_train, img_test, y_train, y_test = train_test_split(
             img, y, test_size=0.33, random_state=0, stratify=y)
 
@@ -92,11 +103,13 @@ if __name__ == "__main__":
   
     # Test classifier
     X_test = build_bovw(img_test, visual_words, radius) 
-    y_pred = NN(X_test, X_train, y_train)
+    y_pred, y_prob = NB(X_test, X_train, y_train)
+    print(y_prob)
 
     # Evaluate model
     print("Accuracy: {}".format(accuracy_score(y_test, y_pred)))
     print("Confusion Matrix:\n{}".format(confusion_matrix(y_test, y_pred)))
 
     img = [cv.imread('test2.png', 0)]
-    print(enc.inverse_transform(NN(build_bovw(img, visual_words, radius), np.concatenate((X_train, X_test), axis=0), np.concatenate((y_train, y_test), axis=0))))
+    pred, prob = NB(build_bovw(img, visual_words, radius), np.concatenate((X_train, X_test), axis=0), np.concatenate((y_train, y_test), axis=0))
+    print(enc.inverse_transform(pred), prob)
