@@ -3,7 +3,7 @@ P556 Final Project
 
 Andrew Corum
 
-## TODO:
+## Deliverables:
 - [x] Topic idea
 - [x] Project proposal
 - [ ] Progress report
@@ -21,3 +21,4 @@ Andrew Corum
     * https://medium.com/@aybukeyalcinerr/bag-of-visual-words-bovw-db9500331b2f
 * Searching for array in a 2d array:
     * https://www.w3resource.com/python-exercises/numpy/python-numpy-exercise-171.php
+* https://scikit-learn.org/stable/modules/classes.html
