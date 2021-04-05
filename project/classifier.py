@@ -1,14 +1,17 @@
 #!/usr/bin/python3
 import math
-from numba import njit
+from numba import jit, njit
 import numpy as np
 import os
 
 from scipy.spatial import distance
+
+from sklearn import svm
 from sklearn.cluster import KMeans
+from sklearn.naive_bayes import GaussianNB
+
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import LabelEncoder
 
 import cv2 as cv
@@ -39,15 +42,21 @@ def cluster_words(k, descripts):
     radius = math.sqrt(compactness / len(descripts))
     return centers, radius
 
-def build_bovw(images, words, thresh):
-    descripts = sift_features(images)
+def closest_word(feature, words):
+    min_dist, best_i = float('inf'), 0
+    for i in range(len(words)):
+        dist = distance.euclidean(feature, words[i])
+        if (dist < min_dist):
+            best_i, min_dist = i, dist
+    return best_i
+
+def build_bovw(images, descripts, words, thresh):
     bags = []
     for img, des in zip(images, descripts):
         hist = [0] * len(words)
         for feature in des:
-            for i in range(len(words)):
-                if distance.euclidean(feature, words[i]) < thresh:
-                    hist[i] += 1
+            i = closest_word(feature, words)
+            hist[i] += 1
         bags.append(hist)
     return bags
 
@@ -69,7 +78,6 @@ def NB(X_test, X_train, y_train):
     gnb.fit(X_train, y_train)
     y_pred = gnb.predict(X_test)
     prob = gnb.predict_log_proba(X_test)
-    print(prob[0])
     return y_pred, [max(prob[i]) for i in range(len(y_pred))]
 
 def train(data_loc):
@@ -80,11 +88,12 @@ def train(data_loc):
     # Train classifier
     descripts = sift_features(img)
     visual_words, radius = cluster_words(100, [val for row in descripts for val in row])
-    X = build_bovw(img, visual_words, radius)
+    X = build_bovw(img, descripts, visual_words, radius)
     return {"visual_words": visual_words, "radius": radius, "data": X, "labels": y, "enc": enc}
 
 def predict(model, img):
-    X = build_bovw([img], model["visual_words"], model["radius"])
+    descripts = sift_features([img])
+    X = build_bovw([img], descripts, model["visual_words"], model["radius"])
     pred, prob = NB(X, model["data"], model["labels"])
     return model["enc"].inverse_transform(pred)[0]
 
@@ -104,11 +113,12 @@ if __name__ == "__main__":
     print("Cluster")
     visual_words, radius = cluster_words(100, [val for row in descripts for val in row])
     print("Hist")
-    X_train = build_bovw(img_train, visual_words, radius)
+    X_train = build_bovw(img_train, descripts, visual_words, radius)
   
     # Test classifier
     print("Hist2")
-    X_test = build_bovw(img_test, visual_words, radius) 
+    descripts = sift_features(img_test)
+    X_test = build_bovw(img_test, descripts, visual_words, radius) 
     print("Bayes")
     y_pred, y_prob = NB(X_test, X_train, y_train)
     print(y_prob)
@@ -118,5 +128,6 @@ if __name__ == "__main__":
     print("Confusion Matrix:\n{}".format(confusion_matrix(y_test, y_pred)))
 
     img = [cv.imread('test2.png', 0)]
-    pred, prob = NB(build_bovw(img, visual_words, radius), np.concatenate((X_train, X_test), axis=0), np.concatenate((y_train, y_test), axis=0))
+    descripts = sift_features(img)
+    pred, prob = NB(build_bovw(img, descripts, visual_words, radius), np.concatenate((X_train, X_test), axis=0), np.concatenate((y_train, y_test), axis=0))
     print(enc.inverse_transform(pred), prob)
