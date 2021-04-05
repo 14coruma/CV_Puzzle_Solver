@@ -62,6 +62,21 @@ def NN(X_test, X_train, y_train):
         y_pred.append(best_class)
     return y_pred
 
+def train(data_loc):
+    # Grab data
+    img, y = image_name_and_class('./data')
+    enc = LabelEncoder()
+    y = enc.fit_transform(y)
+    # Train classifier
+    descripts = sift_features(img)
+    visual_words, radius = cluster_words(100, [val for row in descripts for val in row])
+    X = build_bovw(img, visual_words, radius)
+    return {"visual_words": visual_words, "radius": radius, "data": X, "labels": y, "enc": enc}
+
+def predict(model, img):
+    X = build_bovw([img], model["visual_words"], model["radius"])
+    return model["enc"].inverse_transform([NN(X, model["data"], model["labels"])[0]])
+
 if __name__ == "__main__":
     # Grab data
     img, y = image_name_and_class('./data')
