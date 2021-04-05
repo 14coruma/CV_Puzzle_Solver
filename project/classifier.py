@@ -9,6 +9,7 @@ from scipy.spatial import distance
 from sklearn import svm
 from sklearn.cluster import KMeans
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.model_selection import train_test_split
@@ -33,8 +34,6 @@ def sift_features(images):
     return descripts
 
 def cluster_words(k, descripts):
-    #  kmeans = KMeans(n_clusters=k, random_state=0).fit(descripts)
-    #  return kmeans.cluster_centers_
     criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     flags = cv.KMEANS_RANDOM_CENTERS
     compactness, _, centers = cv.kmeans(
@@ -50,7 +49,8 @@ def closest_word(feature, words):
             best_i, min_dist = i, dist
     return best_i
 
-def build_bovw(images, descripts, words, thresh):
+def build_bovw(images, words, thresh):
+    descripts = sift_features(images)
     bags = []
     for img, des in zip(images, descripts):
         hist = [0] * len(words)
@@ -88,12 +88,11 @@ def train(data_loc):
     # Train classifier
     descripts = sift_features(img)
     visual_words, radius = cluster_words(100, [val for row in descripts for val in row])
-    X = build_bovw(img, descripts, visual_words, radius)
+    X = build_bovw(img, visual_words, radius)
     return {"visual_words": visual_words, "radius": radius, "data": X, "labels": y, "enc": enc}
 
 def predict(model, img):
-    descripts = sift_features([img])
-    X = build_bovw([img], descripts, model["visual_words"], model["radius"])
+    X = build_bovw([img], model["visual_words"], model["radius"])
     pred, prob = NB(X, model["data"], model["labels"])
     return model["enc"].inverse_transform(pred)[0]
 
@@ -113,12 +112,11 @@ if __name__ == "__main__":
     print("Cluster")
     visual_words, radius = cluster_words(100, [val for row in descripts for val in row])
     print("Hist")
-    X_train = build_bovw(img_train, descripts, visual_words, radius)
+    X_train = build_bovw(img_train, visual_words, radius)
   
     # Test classifier
     print("Hist2")
-    descripts = sift_features(img_test)
-    X_test = build_bovw(img_test, descripts, visual_words, radius) 
+    X_test = build_bovw(img_test, visual_words, radius) 
     print("Bayes")
     y_pred, y_prob = NB(X_test, X_train, y_train)
     print(y_prob)
@@ -128,6 +126,5 @@ if __name__ == "__main__":
     print("Confusion Matrix:\n{}".format(confusion_matrix(y_test, y_pred)))
 
     img = [cv.imread('test2.png', 0)]
-    descripts = sift_features(img)
-    pred, prob = NB(build_bovw(img, descripts, visual_words, radius), np.concatenate((X_train, X_test), axis=0), np.concatenate((y_train, y_test), axis=0))
+    pred, prob = NB(build_bovw(img, visual_words, radius), np.concatenate((X_train, X_test), axis=0), np.concatenate((y_train, y_test), axis=0))
     print(enc.inverse_transform(pred), prob)

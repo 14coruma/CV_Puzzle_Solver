@@ -13,6 +13,9 @@ if __name__ == "__main__":
     else:
         rval = False
 
+    curr_label = 'rubiks'
+    new_label = 'rubiks'
+    new_label_count = 0
     while rval:
         # Resize frame
         center = frame.shape[0] / 2, frame.shape[1] / 2
@@ -23,11 +26,17 @@ if __name__ == "__main__":
         # Predict puzzle type
         label = classifier.predict(model, frame)
 
+        # Must see new puzzle type a couple times in a row to be sure
+        # TODO: Maybe recurrent or markov strategy better here?
+        if label == new_label: new_label_count += 1
+        else: new_label_count, new_label = 0, label
+        if new_label_count > 3: curr_label = label
+
         # Display matched features
         img2 = None
-        if label != "None":
+        if curr_label != "None":
             frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            img = cv.imread('./data/{0}/{0}_0.png'.format(label), 0)
+            img = cv.imread('./data/{0}/{0}_0.png'.format(curr_label), 0)
             orb = cv.ORB_create()
             kp1, des1 = orb.detectAndCompute(frame, None)
             kp2, des2 = orb.detectAndCompute(img, None)
