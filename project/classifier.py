@@ -11,9 +11,18 @@ def image_name_and_class(loc):
     images, labels = [], []
     for label in os.listdir(loc):
         path = os.path.join(loc, label)
-        images += [os.path.join(path, x) for x in os.listdir(path)]
+        images += [cv.imread(os.path.join(path, x), 0) for x in os.listdir(path)]
         labels += [label] * len(os.listdir(path))
     return images, labels
+
+def orb_features(images):
+    descripts = []
+    orb = cv.ORB_create()
+    for img in images:
+        keypts = orb.detect(img, None)
+        keypts, des = orb.compute(img, keypts)
+        descripts.append(des)
+    return descripts
 
 def NN(X_test, X_train, y_train):
     y_pred = []
@@ -35,8 +44,8 @@ if __name__ == "__main__":
             img, y, test_size=0.33, random_state=0, stratify=y)
 
     #  # Train classifier
-    #  descrips = orb_features(img_train)
-    #  visual_words = determine_words(k, descrips)
+    descripts = orb_features(img_train)
+    #  visual_words = determine_words(k, descripts)
     #  X_train = build_bovw(img_train, visual_words)
 #  
     #  # Test classifier
