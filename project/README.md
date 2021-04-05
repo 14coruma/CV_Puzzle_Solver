@@ -9,3 +9,5 @@ Andrew Corum
 - [ ] Progress report
 - [ ] Final submission
 - [ ] Presentation
+
+Small change (to see if repo works properly)
