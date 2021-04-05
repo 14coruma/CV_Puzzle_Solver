@@ -60,18 +60,10 @@ def build_bovw(images, words, thresh):
         bags.append(hist)
     return bags
 
-def NN(X_test, X_train, y_train):
-    y_pred = []
-    for test_bovw in X_test:
-        best_class = None
-        best_dist = float('inf')
-        for train_bovw, y in zip(X_train, y_train):
-            dist = distance.euclidean(train_bovw, test_bovw)
-            if dist < best_dist:
-                best_dist = dist
-                best_class = y
-        y_pred.append(best_class)
-    return y_pred
+def KNN(X_test, X_train, y_train, k=1):
+    knn = KNeighborsClassifier(n_neighbors=k)
+    knn.fit(X_train, y_train) 
+    return knn.predict(X_test), knn.predict_proba(X_test)
 
 def NB(X_test, X_train, y_train):
     gnb = GaussianNB()
@@ -93,7 +85,7 @@ def train(data_loc):
 
 def predict(model, img):
     X = build_bovw([img], model["visual_words"], model["radius"])
-    pred, prob = NB(X, model["data"], model["labels"])
+    pred, prob = KNN(X, model["data"], model["labels"])
     return model["enc"].inverse_transform(pred)[0]
 
 
@@ -118,7 +110,7 @@ if __name__ == "__main__":
     print("Hist2")
     X_test = build_bovw(img_test, visual_words, radius) 
     print("Bayes")
-    y_pred, y_prob = NB(X_test, X_train, y_train)
+    y_pred, y_prob = KNN(X_test, X_train, y_train)
     print(y_prob)
 
     # Evaluate model
@@ -126,5 +118,5 @@ if __name__ == "__main__":
     print("Confusion Matrix:\n{}".format(confusion_matrix(y_test, y_pred)))
 
     img = [cv.imread('test2.png', 0)]
-    pred, prob = NB(build_bovw(img, visual_words, radius), np.concatenate((X_train, X_test), axis=0), np.concatenate((y_train, y_test), axis=0))
+    pred, prob = KNN(build_bovw(img, visual_words, radius), np.concatenate((X_train, X_test), axis=0), np.concatenate((y_train, y_test), axis=0))
     print(enc.inverse_transform(pred), prob)
