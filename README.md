@@ -24,3 +24,4 @@ Andrew Corum
 * Searching for array in a 2d array:
     * https://www.w3resource.com/python-exercises/numpy/python-numpy-exercise-171.php
 * https://scikit-learn.org/stable/modules/classes.html
+* Rubiks cube: https://towardsdatascience.com/learning-to-solve-a-rubiks-cube-from-scratch-using-reinforcement-learning-381c3bac5476
