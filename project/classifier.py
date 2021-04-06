@@ -109,14 +109,10 @@ if __name__ == "__main__":
     # Test classifier
     print("Hist2")
     X_test = build_bovw(img_test, visual_words, radius) 
-    print("Bayes")
+    print("KNN")
     y_pred, y_prob = KNN(X_test, X_train, y_train)
-    print(y_prob)
+    #print(y_prob)
 
     # Evaluate model
     print("Accuracy: {}".format(accuracy_score(y_test, y_pred)))
     print("Confusion Matrix:\n{}".format(confusion_matrix(y_test, y_pred)))
-
-    img = [cv.imread('test2.png', 0)]
-    pred, prob = KNN(build_bovw(img, visual_words, radius), np.concatenate((X_train, X_test), axis=0), np.concatenate((y_train, y_test), axis=0))
-    print(enc.inverse_transform(pred), prob)
