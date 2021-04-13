@@ -6,7 +6,7 @@ Andrew Corum
 ## Deliverables:
 - [x] Topic idea
 - [x] Project proposal
-- [ ] Progress report
+- [x] Progress report
 - [ ] Final submission
 - [ ] Presentation
 
@@ -25,3 +25,4 @@ Andrew Corum
     * https://www.w3resource.com/python-exercises/numpy/python-numpy-exercise-171.php
 * https://scikit-learn.org/stable/modules/classes.html
 * Rubiks cube: https://towardsdatascience.com/learning-to-solve-a-rubiks-cube-from-scratch-using-reinforcement-learning-381c3bac5476
+* OpenCV Sudoku solver: https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
