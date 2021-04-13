@@ -68,7 +68,7 @@ class Model():
         self.model.summary()
 
 if __name__ == "__main__":
-    data = MNIST.get_data(n=60000, m=2000)
+    data = MNIST.get_data(n=60000, m=10000)
     model = Model(data)
     model.train()
     model.summary()

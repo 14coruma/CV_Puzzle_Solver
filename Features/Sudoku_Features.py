@@ -86,6 +86,22 @@ def locate_puzzle(img, debug=False):
     
     return img
 
+def center_by_mass(cell):
+    center = [0,0]
+    for i in range(len(cell)):
+        for j in range(len(cell[0])):
+            center[0] += i * cell[i,j]
+            center[1] += j * cell[i,j]
+    center = center / np.sum(cell)
+    print(center)
+    cv.imshow("Cell", cell)
+    cv.waitKey()
+    M = np.float32([
+        [1,0, int((cell.shape[1]-1)/2-center[1])],
+        [0,1, int((cell.shape[0]-1)/2-center[0])]])
+    cell = cv.warpAffine(cell, M, cell.shape)
+    return cell
+
 def get_digit(cell, ocr_model, debug=False):
     # BEGIN: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
     cell = cv.threshold(cell, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
@@ -98,11 +114,13 @@ def get_digit(cell, ocr_model, debug=False):
     if percentFilled < 0.03: return 0
     # END: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
     # Resize to closer match MNIST dataset
-    cell = cv.resize(cell, (32,32))
+    cell = center_by_mass(cell)
+    cell = cv.resize(cell, (36,36))
     # Focus in on center of cell just a little, but make sure final size is (28,28)
-    cell = four_point_transform(cell, np.array([[2,2],[2,30],[30,2],[30,30]]))
+    cell = four_point_transform(cell, np.array([[4,4],[4,32],[32,4],[32,32]]))
+    cell = center_by_mass(cell)
     # Use pre-trained OCR_CNN (on MNIST dataset) to classify number
-    digit = ocr_model.predict(np.array([cell]).reshape(1,28,28,1))
+    digit = ocr_model.predict(np.array([cell]).reshape(1,28,28,1) / 255.0)
     # label is returned as a one-hot categorical array. Need to cast to integer
     digit = np.argmax(digit, axis=-1) 
 
