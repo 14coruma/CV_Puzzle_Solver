@@ -1,9 +1,12 @@
 #!/usr/bin/python3
+import numpy as np
 import cv2 as cv
-import classifier
+
+import Classifier
+from AI import Sudoku
 
 if __name__ == "__main__":
-    model = classifier.train('./data')
+    model = Classifier.train('./data')
 
     # Video Capture code taken from https://stackoverflow.com/questions/604749/how-do-i-access-my-webcam-in-python
     cv.namedWindow("preview")
@@ -24,7 +27,7 @@ if __name__ == "__main__":
         frame = frame[int(y):int(y+size), int(x):int(x+size)]
         frame = cv.resize(frame, (256,256))
         # Predict puzzle type
-        label = classifier.predict(model, frame)
+        label = Classifier.predict(model, frame)
 
         # Must see new puzzle type a couple times in a row to be sure
         # TODO: Maybe recurrent or markov strategy better here?
