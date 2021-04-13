@@ -85,17 +85,25 @@ def construct_board(img):
     h_cell, w_cell = height//9, width//9
     # Blurr image to reduce noise in edges
     img = cv.GaussianBlur(img, (3,3), cv.BORDER_REFLECT)
-    # Threshold
-    img = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
-    im2 = cv.bitwise_not(img)
     for i in range(81):
         y, x = w_cell*(i//9), h_cell*(i%9)
-        cv.imshow("Hi", img[y:y+h_cell, x:x+w_cell])
-        cell = im2[y:y+h_cell, x:x+w_cell]
+        cell = img[y:y+h_cell, x:x+w_cell]
+        # BEGIN: Code from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
+        cell = cv.threshold(cell, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
         cell = clear_border(cell)
         cell = cv.bitwise_not(cell)
-        cv.imshow("HI2", cell)
-        cv.waitKey()
+        # compute the percentage of masked pixels relative to the total
+        # area of the image
+        (h, w) = cell.shape
+        percentFilled = np.count_nonzero(cell == 0) / float(w * h)
+        # if less than 3% of the mask is filled then we are looking at
+        # noise and can safely ignore the contour
+        if percentFilled < 0.03: continue
+        # END: Code from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
+        # check to see if we should visualize the masking step
+        cv.imshow("Digit", cell)
+        cv.waitKey(0)
+
 
 if __name__ == "__main__":
     img = cv.imread("../Images/sudoku_0_full.png", 0)
