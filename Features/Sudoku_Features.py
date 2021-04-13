@@ -5,9 +5,13 @@ import imutils
 from imutils.perspective import four_point_transform
 from sympy import Point, Line, Polygon
 from scipy.spatial import ConvexHull
+from skimage.segmentation import clear_border
 
+# Euclidean distance between two points
 def euclidean(p0,p1): return math.sqrt((p0[0]-p1[0])**2 + (p0[1]-p1[1])**2)
 
+# Given rho and theta value, return two points on the line
+# (from https://stackoverflow.com/questions/48954246/find-sudoku-grid-using-opencv-and-python)
 def polar_to_points(rho, theta, return_class=False):
     a = math.cos(theta)
     b = math.sin(theta)
@@ -18,6 +22,7 @@ def polar_to_points(rho, theta, return_class=False):
     if return_class: return Point(x0,y0), Point(x1,y1)
     else: return (x0,y0), (x1,y1)
 
+# Given an image, determine location of Sudoku board, and then focus image on board
 def locate_puzzle(img):
     # Blurr image to reduce noise in edges
     thresh = cv.GaussianBlur(img, (3,3), cv.BORDER_REFLECT)
@@ -70,13 +75,30 @@ def locate_puzzle(img):
         [tr[1],tr[0]],
         [bl[1],br[0]],
         [br[1],br[0]]]))
-
-    cv.imshow("Source", img)
-    cv.imshow("Detected Lines (in red) - Hough Line Transform", cdst)
     
-    cv.waitKey()
+    return img
+
+# Given an image of ONLY a sudoku board, determine where the numbers are,
+# then use OCR to classify each digit
+def construct_board(img):
+    height, width = img.shape
+    h_cell, w_cell = height//9, width//9
+    # Blurr image to reduce noise in edges
+    img = cv.GaussianBlur(img, (3,3), cv.BORDER_REFLECT)
+    # Threshold
+    img = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
+    im2 = cv.bitwise_not(img)
+    for i in range(81):
+        y, x = w_cell*(i//9), h_cell*(i%9)
+        cv.imshow("Hi", img[y:y+h_cell, x:x+w_cell])
+        cell = im2[y:y+h_cell, x:x+w_cell]
+        cell = clear_border(cell)
+        cell = cv.bitwise_not(cell)
+        cv.imshow("HI2", cell)
+        cv.waitKey()
 
 if __name__ == "__main__":
     img = cv.imread("../Images/sudoku_0_full.png", 0)
     #img = cv.imread("../Images/sudoku.jpg", 0)
-    locate_puzzle(img)
+    img = locate_puzzle(img)
+    board = construct_board(img)

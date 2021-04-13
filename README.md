@@ -20,6 +20,7 @@ Andrew Corum
     * Adpative thresholding for various lighting conditions: https://docs.opencv.org/3.4/d7/d4d/tutorial_py_thresholding.html
     * Contours https://docs.opencv.org/3.4/d4/d73/tutorial_py_contours_begin.html
     * Hough Transform: https://docs.opencv.org/3.4/d9/db0/tutorial_hough_lines.html
+    * OTSU Thresholding: https://docs.opencv.org/3.4/d7/d4d/tutorial_py_thresholding.html
 * Webcam using OpenCV: https://stackoverflow.com/questions/604749/how-do-i-access-my-webcam-in-python
 * OpenCV crop: https://stackoverflow.com/questions/61927877/how-to-crop-opencv-image-from-center
 * Bag of Visual Words:
