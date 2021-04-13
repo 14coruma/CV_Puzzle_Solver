@@ -1,13 +1,14 @@
 import math
 import numpy as np
+import sys
+
 import cv2 as cv
 import imutils
 from imutils.perspective import four_point_transform
-from sympy import Point, Line, Polygon
-from scipy.spatial import ConvexHull
 from skimage.segmentation import clear_border
+from sympy import Point, Line
+
 from tensorflow.keras import models
-from tensorflow.keras.preprocessing.image import img_to_array
 
 # Euclidean distance between two points
 def euclidean(p0,p1): return math.sqrt((p0[0]-p1[0])**2 + (p0[1]-p1[1])**2)
@@ -25,7 +26,7 @@ def polar_to_points(rho, theta, return_class=False):
     else: return (x0,y0), (x1,y1)
 
 # Given an image, determine location of Sudoku board, and then focus image on board
-def locate_puzzle(img):
+def locate_puzzle(img, debug=False):
     # Blurr image to reduce noise in edges
     thresh = cv.GaussianBlur(img, (3,3), cv.BORDER_REFLECT)
 
@@ -77,10 +78,15 @@ def locate_puzzle(img):
         [tr[1],tr[0]],
         [bl[1],br[0]],
         [br[1],br[0]]]))
+
+    if debug: 
+        cv.imshow("Lines", cdst)
+        cv.imshow("Cropped", img)
+        cv.waitKey()
     
     return img
 
-def get_digit(cell, ocr_model):
+def get_digit(cell, ocr_model, debug=False):
     # BEGIN: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
     cell = cv.threshold(cell, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
     cell = clear_border(cell)
@@ -93,18 +99,23 @@ def get_digit(cell, ocr_model):
     # END: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
     # Resize to closer match MNIST dataset
     cell = cv.resize(cell, (32,32))
-    # Zoom in on center of cell just a little, but make sure final size is (28,28)
+    # Focus in on center of cell just a little, but make sure final size is (28,28)
     cell = four_point_transform(cell, np.array([[2,2],[2,30],[30,2],[30,30]]))
-    cv.imshow("Cell", cell)
-    cv.waitKey()
     # Use pre-trained OCR_CNN (on MNIST dataset) to classify number
     digit = ocr_model.predict(np.array([cell]).reshape(1,28,28,1))
     # label is returned as a one-hot categorical array. Need to cast to integer
-    return np.argmax(digit, axis=-1)
+    digit = np.argmax(digit, axis=-1) 
+
+    if debug:
+        print("Digit: ", digit)
+        cv.imshow("Cell", cell)
+        cv.waitKey()
+
+    return digit
 
 # Given an image of ONLY a sudoku board, determine where the numbers are,
 # then use OCR to classify each digit
-def construct_board(img, ocr_model):
+def construct_board(img, ocr_model, debug=False):
     board = np.zeros((9,9))
     height, width = img.shape
     h_cell, w_cell = height//9, width//9
@@ -113,13 +124,14 @@ def construct_board(img, ocr_model):
     for i in range(81):
         y, x = w_cell*(i//9), h_cell*(i%9)
         cell = img[y:y+h_cell, x:x+w_cell]
-        board[i//9, i%9] = get_digit(cell, ocr_model)
+        board[i//9, i%9] = get_digit(cell, ocr_model, debug)
     return board
 
 if __name__ == "__main__":
-    img = cv.imread("Images/sudoku_0_full.png", 0)
-    #img = cv.imread("Images/sudoku.jpg", 0)
+    filename, debug = "Images/sudoku.jpg", True
+    if len(sys.argv) > 1: filename = sys.argv[1]
+    img = cv.imread(filename, 0)
     ocr_model = models.load_model('Models/OCR_CNN_Trained')
-    imn = locate_puzzle(img)
-    board = construct_board(img, ocr_model)
+    img = locate_puzzle(img, debug)
+    board = construct_board(img, ocr_model, debug)
     print(board)
