@@ -86,16 +86,16 @@ def locate_puzzle(img, debug=False):
     
     return img
 
-def center_by_mass(cell):
+def center_by_mass(cell, debug=False):
     center = [0,0]
     for i in range(len(cell)):
         for j in range(len(cell[0])):
             center[0] += i * cell[i,j]
             center[1] += j * cell[i,j]
     center = center / np.sum(cell)
-    print(center)
-    cv.imshow("Cell", cell)
-    cv.waitKey()
+    if debug:
+        cv.imshow("Cell", cell)
+        cv.waitKey()
     M = np.float32([
         [1,0, int((cell.shape[1]-1)/2-center[1])],
         [0,1, int((cell.shape[0]-1)/2-center[0])]])
@@ -140,16 +140,38 @@ def construct_board(img, ocr_model, debug=False):
     # Blurr image to reduce noise in edges
     img = cv.GaussianBlur(img, (3,3), cv.BORDER_REFLECT)
     for i in range(81):
-        y, x = w_cell*(i//9), h_cell*(i%9)
+        y, x = h_cell*(i//9), w_cell*(i%9)
         cell = img[y:y+h_cell, x:x+w_cell]
         board[i//9, i%9] = get_digit(cell, ocr_model, debug)
     return board
 
+# Given an image of a cropped Sudoku board, and the parsed board[][],
+# display the digits of the board[][] on the image
+def visualize_board(img, board):
+    height, width = img.shape
+    h_cell, w_cell = height//9, width//9
+    img = cv.cvtColor(img, cv.COLOR_GRAY2RGB) # Let's show the image in color
+    for i in range(81):
+        y, x = h_cell*(i//9+1), w_cell*(i%9)
+        digit = int(board[i//9][i%9])
+        if digit == 0: digit = ""
+        # BEGIN: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
+        textX = int(w_cell * 0.4)
+        textY = int(h_cell * -0.3)
+        textX += x
+        textY += y
+        cv.putText(img, str(digit), (textX, textY), cv.FONT_HERSHEY_SIMPLEX, 1.2, (255, 0, 0), 2)
+        # END: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
+    return img
+
 if __name__ == "__main__":
-    filename, debug = "Images/sudoku.jpg", True
+    filename, debug = "Images/sudoku.jpg", False
     if len(sys.argv) > 1: filename = sys.argv[1]
     img = cv.imread(filename, 0)
     ocr_model = models.load_model('Models/OCR_CNN_Trained')
-    img = locate_puzzle(img, debug)
-    board = construct_board(img, ocr_model, debug)
+    cropped = locate_puzzle(img, debug)
+    board = construct_board(cropped, ocr_model, debug)
     print(board)
+    visualized = visualize_board(cropped, board)
+    cv.imshow("Visualized", visualized)
+    cv.waitKey()
