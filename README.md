@@ -32,3 +32,7 @@ Andrew Corum
 * Rubiks cube: https://towardsdatascience.com/learning-to-solve-a-rubiks-cube-from-scratch-using-reinforcement-learning-381c3bac5476
 * OpenCV Sudoku solver: https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
 * Hough transform for grid detection: https://stackoverflow.com/questions/48954246/find-sudoku-grid-using-opencv-and-python
+* TensorFlow Docs: https://www.tensorflow.org/
+* Keras Docs: https://www.tensorflow.org/guide/keras
+* CUDA install/setup docs: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/
+* Simple CNN for MNIST dataset: https://linux-blog.anracom.com/2020/05/31/a-simple-cnn-for-the-mnist-datasets-ii-building-the-cnn-with-keras-and-a-first-test/

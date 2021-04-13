@@ -6,6 +6,8 @@ from imutils.perspective import four_point_transform
 from sympy import Point, Line, Polygon
 from scipy.spatial import ConvexHull
 from skimage.segmentation import clear_border
+from tensorflow.keras import models
+from tensorflow.keras.preprocessing.image import img_to_array
 
 # Euclidean distance between two points
 def euclidean(p0,p1): return math.sqrt((p0[0]-p1[0])**2 + (p0[1]-p1[1])**2)
@@ -78,9 +80,32 @@ def locate_puzzle(img):
     
     return img
 
+def get_digit(cell, ocr_model):
+    # BEGIN: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
+    cell = cv.threshold(cell, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
+    cell = clear_border(cell)
+    cell = clear_border(cell)
+    # compute the percentage of area of thresholded pixels
+    (h, w) = cell.shape
+    percentFilled = np.count_nonzero(cell == 255) / float(w * h)
+    # if less than 3% of the mask is filled, then must be empty cell
+    if percentFilled < 0.03: return 0
+    # END: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
+    # Resize to closer match MNIST dataset
+    cell = cv.resize(cell, (32,32))
+    # Zoom in on center of cell just a little, but make sure final size is (28,28)
+    cell = four_point_transform(cell, np.array([[2,2],[2,30],[30,2],[30,30]]))
+    cv.imshow("Cell", cell)
+    cv.waitKey()
+    # Use pre-trained OCR_CNN (on MNIST dataset) to classify number
+    digit = ocr_model.predict(np.array([cell]).reshape(1,28,28,1))
+    # label is returned as a one-hot categorical array. Need to cast to integer
+    return np.argmax(digit, axis=-1)
+
 # Given an image of ONLY a sudoku board, determine where the numbers are,
 # then use OCR to classify each digit
-def construct_board(img):
+def construct_board(img, ocr_model):
+    board = np.zeros((9,9))
     height, width = img.shape
     h_cell, w_cell = height//9, width//9
     # Blurr image to reduce noise in edges
@@ -88,25 +113,13 @@ def construct_board(img):
     for i in range(81):
         y, x = w_cell*(i//9), h_cell*(i%9)
         cell = img[y:y+h_cell, x:x+w_cell]
-        # BEGIN: Code from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
-        cell = cv.threshold(cell, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
-        cell = clear_border(cell)
-        cell = cv.bitwise_not(cell)
-        # compute the percentage of masked pixels relative to the total
-        # area of the image
-        (h, w) = cell.shape
-        percentFilled = np.count_nonzero(cell == 0) / float(w * h)
-        # if less than 3% of the mask is filled then we are looking at
-        # noise and can safely ignore the contour
-        if percentFilled < 0.03: continue
-        # END: Code from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
-        # check to see if we should visualize the masking step
-        cv.imshow("Digit", cell)
-        cv.waitKey(0)
-
+        board[i//9, i%9] = get_digit(cell, ocr_model)
+    return board
 
 if __name__ == "__main__":
-    img = cv.imread("../Images/sudoku_0_full.png", 0)
-    #img = cv.imread("../Images/sudoku.jpg", 0)
-    img = locate_puzzle(img)
-    board = construct_board(img)
+    img = cv.imread("Images/sudoku_0_full.png", 0)
+    #img = cv.imread("Images/sudoku.jpg", 0)
+    ocr_model = models.load_model('Models/OCR_CNN_Trained')
+    imn = locate_puzzle(img)
+    board = construct_board(img, ocr_model)
+    print(board)

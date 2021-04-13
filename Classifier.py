@@ -17,9 +17,12 @@ from sklearn.preprocessing import LabelEncoder
 
 import cv2 as cv
 
+LABELS = ['akari', 'rubiks', 'slitherlink', 'sudoku']
+
 def image_name_and_class(loc):
     images, labels = [], []
-    for label in os.listdir(loc):
+    #for label in os.listdir(loc):
+    for label in LABELS:
         path = os.path.join(loc, label)
         images += [cv.imread(os.path.join(path, x), 0) for x in os.listdir(path)]
         labels += [label] * len(os.listdir(path))

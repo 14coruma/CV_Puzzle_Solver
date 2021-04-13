@@ -3,7 +3,7 @@ import numpy as np
 import cv2 as cv
 
 import Classifier
-from AI import Sudoku
+from AI import Sudoku_AI
 
 if __name__ == "__main__":
     model = Classifier.train('./Data')
