@@ -69,4 +69,5 @@ if __name__ == "__main__":
         [0,0,7,0,0,0,0,0,0],
         [0,0,0,1,9,0,0,0,0]
     ])
-    print(solve(board))
+    print("Input board:\n", board)
+    print("Solution:\n", solve(board))

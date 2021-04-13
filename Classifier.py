@@ -74,7 +74,7 @@ def NB(X_test, X_train, y_train):
 
 def train(data_loc):
     # Grab data
-    img, y = image_name_and_class('./data')
+    img, y = image_name_and_class('./Data')
     enc = LabelEncoder()
     y = enc.fit_transform(['None'] + y)[1:]
     # Train classifier
@@ -92,7 +92,7 @@ def predict(model, img):
 if __name__ == "__main__":
     # Grab data
     print("Grabbing images")
-    img, y = image_name_and_class('./data')
+    img, y = image_name_and_class('./Data')
     enc = LabelEncoder()
     y = enc.fit_transform(['None'] + y)[1:]
     img_train, img_test, y_train, y_test = train_test_split(

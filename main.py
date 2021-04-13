@@ -6,7 +6,7 @@ import Classifier
 from AI import Sudoku
 
 if __name__ == "__main__":
-    model = Classifier.train('./data')
+    model = Classifier.train('./Data')
 
     # Video Capture code taken from https://stackoverflow.com/questions/604749/how-do-i-access-my-webcam-in-python
     cv.namedWindow("preview")
@@ -39,7 +39,7 @@ if __name__ == "__main__":
         img2 = None
         if curr_label != "None":
             frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            img = cv.imread('./data/{0}/{0}_0.png'.format(curr_label), 0)
+            img = cv.imread('./Data/{0}/{0}_0.png'.format(curr_label), 0)
             orb = cv.ORB_create()
             kp1, des1 = orb.detectAndCompute(frame, None)
             kp2, des2 = orb.detectAndCompute(img, None)
