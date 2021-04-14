@@ -28,19 +28,24 @@ class Model():
         self.X_test = self.X_test / 255.0
         
     def build_model(self):
-        # BEGIN: Code adapted from https://www.tensorflow.org/tutorials/images/cnn
-        # BEGIN: Model adapted from https://linux-blog.anracom.com/2020/05/31/a-simple-cnn-for-the-mnist-datasets-ii-building-the-cnn-with-keras-and-a-first-test/
+        # Model started with https://linux-blog.anracom.com/2020/05/31/a-simple-cnn-for-the-mnist-datasets-ii-building-the-cnn-with-keras-and-a-first-test/
+        # Then tested and updated for improvements
         self.model = models.Sequential([
             layers.Conv2D(32, (3,3), activation='relu', input_shape=(28,28,1)),
             layers.MaxPooling2D((2,2)),
-            layers.Dropout(0.25),
+            layers.Dropout(0.5),
+
+            layers.Conv2D(64, (3,3), activation='relu'),
             layers.Conv2D(64, (3,3), activation='relu'),
             layers.MaxPooling2D((2,2)),
-            layers.Dropout(0.25),
+            layers.Dropout(0.5),
+
             layers.Conv2D(64, (3,3), activation='relu'),
             layers.Flatten(),
-            layers.Dense(256, activation='relu'),
+
             layers.Dense(128, activation='relu'),
+            layers.Dropout(0.5),
+
             layers.Dense(10, activation='softmax')
         ])
 
@@ -48,8 +53,6 @@ class Model():
             optimizer='adam',
             loss='categorical_crossentropy',
             metrics=['accuracy'])
-        # END: Model adapted from https://linux-blog.anracom.com/2020/05/31/a-simple-cnn-for-the-mnist-datasets-ii-building-the-cnn-with-keras-and-a-first-test/
-        # END: Code adapted from https://www.tensorflow.org/tutorials/images/cnn
 
     def train(self):
         self.model.fit(self.X_train, self.y_train, batch_size=128,
