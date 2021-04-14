@@ -10,6 +10,19 @@ Andrew Corum
 - [ ] Final submission
 - [ ] Presentation
 
+## CNN Trials
+| Test Accuracy | Epochs | Conv Layers                      | Dropout      | Dense Layers |
+|---------------|--------|----------------------------------|--------------|--------------|
+| 0.9938        | 90     | 32 (3x3)<br>64 (3x3)<br>64 (3x3) | N/A          | 128<br>64    |
+| 0.9929        | 90     | 32 (3x3)<br>64 (3x3)<br>64 (3x3) | 0.25<br>0.25 | 128<br>64    |
+| 0.9920        | 90     | 32 (3x3)<br>64 (3x3)<br>64 (3x3) | 0.5<br>0.5   | 128<br>64    |
+| 0.9932        | 90     | 32 (3x3)<br>64 (3x3)<br>64 (3x3) | 0.25<br>0.5  | 128<br>64    |
+| 0.9926        | 90     | 32 (3x3)<br>64 (3x3)<br>64 (3x3  | 0.5<br>0.25  | 128<br>64    |
+| 0.9930        | 90     | 32 (3x3)<br>64 (3x3)<br>64 (3x3) | N/A          | 256<br>128   |
+| 0.9921        | 90     | 32 (3x3)<br>64 (3x3)<br>64 (3x3) | 0.25<br>0.25 | 256<br>128    |
+[table generator](https://www.tablesgenerator.com/markdown_tables)
+
+
 ## References
 * https://imagemagick.org/
 * https://docs.opencv.org/

@@ -39,8 +39,8 @@ class Model():
             layers.Dropout(0.25),
             layers.Conv2D(64, (3,3), activation='relu'),
             layers.Flatten(),
+            layers.Dense(256, activation='relu'),
             layers.Dense(128, activation='relu'),
-            layers.Dense(64, activation='relu'),
             layers.Dense(10, activation='softmax')
         ])
 
