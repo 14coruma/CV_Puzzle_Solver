@@ -102,7 +102,7 @@ def center_by_mass(cell, debug=False):
     cell = cv.warpAffine(cell, M, cell.shape)
     return cell
 
-def get_digit(cell, ocr_model, debug=False):
+def get_digit(cell, ocr_model, allow_zeros = True, debug=False):
     # BEGIN: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
     cell = cv.threshold(cell, 0, 255, cv.THRESH_BINARY_INV | cv.THRESH_OTSU)[1]
     cell = clear_border(cell)
@@ -123,6 +123,9 @@ def get_digit(cell, ocr_model, debug=False):
     digit = ocr_model.predict(np.array([cell]).reshape(1,28,28,1) / 255.0)
     # label is returned as a one-hot categorical array. Need to cast to integer
     digit = np.argmax(digit, axis=-1) 
+    # For games like Sudoku, there are no zeros on the board.
+    # If OCR finds a zero, then it is likely a 6, 8, or 9. In this case, we assume it is 9
+    if not allow_zeros and digit == 0: digit = 6
 
     if debug:
         print("Digit: ", digit)
@@ -133,7 +136,7 @@ def get_digit(cell, ocr_model, debug=False):
 
 # Given an image of ONLY a sudoku board, determine where the numbers are,
 # then use OCR to classify each digit
-def construct_board(img, ocr_model, debug=False):
+def construct_board(img, ocr_model, allow_zeros=True, debug=False):
     board = np.zeros((9,9))
     height, width = img.shape
     h_cell, w_cell = height//9, width//9
@@ -142,7 +145,7 @@ def construct_board(img, ocr_model, debug=False):
     for i in range(81):
         y, x = h_cell*(i//9), w_cell*(i%9)
         cell = img[y:y+h_cell, x:x+w_cell]
-        board[i//9, i%9] = get_digit(cell, ocr_model, debug)
+        board[i//9, i%9] = get_digit(cell, ocr_model, allow_zeros, debug)
     return board
 
 # Given an image of a cropped Sudoku board, and the parsed board[][],
@@ -165,12 +168,12 @@ def visualize_board(img, board):
     return img
 
 if __name__ == "__main__":
-    filename, debug = "Images/sudoku.jpg", False
+    filename, allow_zeros, debug = "Images/sudoku.jpg", False, False
     if len(sys.argv) > 1: filename = sys.argv[1]
     img = cv.imread(filename, 0)
     ocr_model = models.load_model('Models/OCR_CNN_Trained')
     cropped = locate_puzzle(img, debug)
-    board = construct_board(cropped, ocr_model, debug)
+    board = construct_board(cropped, ocr_model, allow_zeros, debug)
     print(board)
     visualized = visualize_board(cropped, board)
     cv.imshow("Visualized", visualized)
