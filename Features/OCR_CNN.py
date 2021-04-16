@@ -36,22 +36,23 @@ class Model():
             layers.Conv2D(64, (3,3), activation='relu'),
             layers.MaxPooling2D((2,2)),
             layers.BatchNormalization(),
-            layers.Dropout(0.5),
+            layers.Dropout(0.3),
 
             layers.Conv2D(64, (3,3), activation='relu'),
             layers.BatchNormalization(),
             layers.Conv2D(64, (3,3), activation='relu'),
             layers.MaxPooling2D((2,2)),
             layers.BatchNormalization(),
-            layers.Dropout(0.5),
+            layers.Dropout(0.3),
 
             layers.Conv2D(64, (3,3), activation='relu'),
             layers.BatchNormalization(),
+            layers.Dropout(0.3),
             layers.Flatten(),
 
             layers.Dense(128, activation='relu'),
             layers.BatchNormalization(),
-            layers.Dropout(0.5),
+            layers.Dropout(0.3),
 
             layers.Dense(10, activation='softmax')
         ])
