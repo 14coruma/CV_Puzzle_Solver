@@ -1,4 +1,4 @@
-# Code used to solve a Sudoku puzzle, given an image
+# Code used to solve a Sudoku puzzle, given a parsed board
 import numpy as np
 from numba import njit
 
