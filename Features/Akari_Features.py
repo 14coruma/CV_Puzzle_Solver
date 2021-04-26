@@ -167,6 +167,8 @@ def visualize_board(img, board):
         y, x = h_cell*(i//10+1), w_cell*(i%10)
         digit = int(board[i//10][i%10])
         if digit < 0: digit = ""
+        elif digit == 9: digit = "+"
+        elif digit == 100: digit = "*"
         # BEGIN: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
         textX = int(w_cell * 0.4)
         textY = int(h_cell * -0.3)

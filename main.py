@@ -6,7 +6,7 @@ import cv2 as cv
 from tensorflow.keras import models
 
 import Classifier
-from AI import Sudoku_AI
+from AI import Akari_AI, Sudoku_AI
 from Features import Akari_Features, Sudoku_Features
 
 def get_args():
@@ -39,6 +39,13 @@ def get_features(ptype, ocr_model, image):
         cv.imshow('Sudoku features', visualized)
         features['cropped'] = cropped
         features['board'] = board
+    elif ptype == 'akari':
+        cropped = Akari_Features.locate_puzzle(cv.cvtColor(image, cv.COLOR_BGR2GRAY))
+        board = Akari_Features.construct_board(cropped, ocr_model, allow_zeros=True)
+        visualized = Akari_Features.visualize_board(cropped, board)
+        cv.imshow('Akari features', visualized)
+        features['cropped'] = cropped
+        features['board'] = board
     return features
 
 def find_solution(ptype, features):
@@ -47,6 +54,10 @@ def find_solution(ptype, features):
         solution = Sudoku_AI.solve(features['board'])
         visualized = Sudoku_Features.visualize_board(features['cropped'], solution)
         cv.imshow('Sudoku solved', visualized)
+    elif ptype == 'akari':
+        solution = Akari_AI.solve(features['board'])
+        visualized = Akari_Features.visualize_board(features['cropped'], solution)
+        cv.imshow('Akari solved', visualized)
     return solution
 
 if __name__ == "__main__":
