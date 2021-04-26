@@ -7,7 +7,7 @@ from tensorflow.keras import models
 
 import Classifier
 from AI import Sudoku_AI
-from Features import Sudoku_Features
+from Features import Akari_Features, Sudoku_Features
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -34,7 +34,7 @@ def get_features(ptype, ocr_model, image):
     features = {'image': image}
     if ptype == 'sudoku':
         cropped = Sudoku_Features.locate_puzzle(cv.cvtColor(image, cv.COLOR_BGR2GRAY))
-        board = Sudoku_Features.construct_board(cropped, ocr_model)
+        board = Sudoku_Features.construct_board(cropped, ocr_model, allow_zeros=False)
         visualized = Sudoku_Features.visualize_board(cropped, board)
         cv.imshow('Sudoku features', visualized)
         features['cropped'] = cropped
