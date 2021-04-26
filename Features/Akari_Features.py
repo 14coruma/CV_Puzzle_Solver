@@ -42,7 +42,7 @@ def locate_puzzle(img, debug=False):
         param1, param2 = param1+5, param2+30
         i += 1
         if lines is None: continue
-        if len(lines) <= 37: break
+        if len(lines) <= 40: break
         
     # Copy edges to the images that will display the results in BGR
     cdst = cv.cvtColor(edges, cv.COLOR_GRAY2BGR)
@@ -77,7 +77,7 @@ def locate_puzzle(img, debug=False):
     img = four_point_transform(img, np.array([
         [tl[1],tl[0]],
         [tr[1],tr[0]],
-        [bl[1],br[0]],
+        [bl[1],bl[0]],
         [br[1],br[0]]]))
 
     if debug: 

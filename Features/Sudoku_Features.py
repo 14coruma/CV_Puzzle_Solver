@@ -76,7 +76,7 @@ def locate_puzzle(img, debug=False):
     img = four_point_transform(img, np.array([
         [tl[1],tl[0]],
         [tr[1],tr[0]],
-        [bl[1],br[0]],
+        [bl[1],bl[0]],
         [br[1],br[0]]]))
 
     if debug: 
