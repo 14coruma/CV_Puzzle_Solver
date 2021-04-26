@@ -163,7 +163,7 @@ def visualize_board(img, board):
         textY = int(h_cell * -0.3)
         textX += x
         textY += y
-        cv.putText(img, str(digit), (textX, textY), cv.FONT_HERSHEY_SIMPLEX, 1.2, (255, 0, 0), 2)
+        cv.putText(img, str(digit), (textX, textY), cv.FONT_HERSHEY_SIMPLEX, h_cell/40, (255, 0, 0), 2)
         # END: Code adapted from https://www.pyimagesearch.com/2020/08/10/opencv-sudoku-solver-and-ocr/
     return img
 
