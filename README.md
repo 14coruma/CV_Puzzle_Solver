@@ -60,3 +60,4 @@ Andrew Corum
 * Keras Docs: https://www.tensorflow.org/guide/keras
 * CUDA install/setup docs: https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/
 * Simple CNN for MNIST dataset: https://linux-blog.anracom.com/2020/05/31/a-simple-cnn-for-the-mnist-datasets-ii-building-the-cnn-with-keras-and-a-first-test/
+* Python constraint programming: https://stackabuse.com/constraint-programming-with-python-constraint/#listofbuiltinconstraints

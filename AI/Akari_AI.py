@@ -1,111 +1,89 @@
-# Code used to solve an Akari puzzle, given a parsed board
+import constraint
 import numpy as np
 
-SIZE = 4
-COUNT = 0
+SIZE=10
 
-# General board notation:
-# SIZExSIZE grid
-# Numbers 0-4 represent number of adjacent lights
-# Number -1 represents an empty space
-# Number 9 represents a wall
-# Number 8 represents a light
-# Number -2 represents a marked lit space
-
-# Check if an akari board is valid/solved
-def valid(board):
-    # Check that lights and adjacent numbers match up
-    for y in range(SIZE):
-        for x in range(SIZE):
-            if board[y,x] in [-2, -1, 8, 9]: continue
-            light_count = 0
-            if y>0 and board[y-1,x] == 8: light_count += 1
-            if y<SIZE-1 and board[y+1,x] == 8: light_count += 1
-            if x>0 and board[y,x-1] == 8: light_count += 1
-            if x<SIZE-1 and board[y,x+1] == 8: light_count += 1
-            if light_count != board[y,x]: return False
-    # Check that lights do not shine on each other
-    # Mark lit spaces with -2
-    lights = np.where(board == 8)
-    for y,x in zip(lights[0], lights[1]):
-        # Shine up
-        for i in reversed(range(y)):
-            if board[i,x] == 8: return False
-            elif board[i,x] >= 0: break
-            else: board[i,x] = -2
-        # Shine down
-        for i in range(y+1,SIZE):
-            if board[i,x] == 8: return False
-            elif board[i,x] >= 0: break
-            else: board[i,x] = -2
-        # Shine right
-        for i in range(x+1,SIZE):
-            if board[y,i] == 8: return False
-            elif board[y,i] >= 0: break
-            else: board[y,i] = -2
-        # Shine left
-        for i in reversed(range(x)):
-            if board[y,i] == 8: return False
-            elif board[y,i] >= 0: break
-            else: board[y,i] = -2
-    # Check that all spaces are lit
-    for y in range(SIZE):
-        for x in range(SIZE):
-            if board[y,x] == -1: return False
-    return True
-
-# Mark lit spaces if light at position y,x
-# If lighting another light, then return None
-def mark_lights(board, y, x):
-    # Shine up
-    for i in reversed(range(y)):
-        if board[i,x] == 8: return None
-        elif board[i,x] >= 0: break
-        else: board[i,x] = -2
-    # Shine down
-    for i in range(y+1,SIZE):
-        if board[i,x] == 8: return None
-        elif board[i,x] >= 0: break
-        else: board[i,x] = -2
-    # Shine right
-    for i in range(x+1,SIZE):
-        if board[y,i] == 8: return None
-        elif board[y,i] >= 0: break
-        else: board[y,i] = -2
-    # Shine left
-    for i in reversed(range(x)):
-        if board[y,i] == 8: return None
-        elif board[y,i] >= 0: break
-        else: board[y,i] = -2
-    board[y,x] = 8
-    return board
-
-# Given a SIZExSIZE akari board, solve recursively using backtracking
-def solve(board, r=0, c=0):
-    # If at last position, don't recurse further
-    if r >= SIZE-1 and c >= SIZE-1:
-        if valid(board): return board
-        if board[r,c] == -1: board = mark_lights(board, r, c)
-        if board is not None and valid(board): return board
-        global COUNT
-        COUNT += 1
-        return None
+def solve(board):
+    problem = constraint.Problem(constraint.BacktrackingSolver())
     
-    next_r = r + (c+1) // SIZE
-    next_c = (c+1) % SIZE
-    # If not an empty, unlit space, move to next position
-    if board[r,c] != -1: return solve(np.copy(board), next_r, next_c)
-    # Check with a light at current position, if possible
-    board2 = mark_lights(np.copy(board), r, c)
-    if board2 is not None:
-        board2[r,c] = 8
-        result = solve(np.copy(board2), next_r, next_c)
-        if result is not None: return result
-    # Check leaving current space empty
-    result = solve(np.copy(board), next_r, next_c)
-    if result is not None: return result
-    # Otherwise, no solution possible...
-    return None
+    # Build Variables
+    for y in range(SIZE):
+        for x in range(SIZE):
+            if board[y,x] == -1:
+                problem.addVariable(str([y,x]), [1, 100])
+
+    # Constraints for variables near numbers
+    for y in range(SIZE):
+        for x in range(SIZE):
+            if board[y,x] in [0,1,2,3,4]:
+                val = 0
+                adj_vars = []
+                if y>0 and board[y-1,x] == -1: adj_vars.append(str([y-1,x]))
+                if y<SIZE-1 and board[y+1,x] == -1: adj_vars.append(str([y+1,x]))
+                if x>0 and board[y,x-1] == -1: adj_vars.append(str([y,x-1]))
+                if x<SIZE-1 and board[y,x+1] == -1: adj_vars.append(str([y,x+1]))
+                val += 100*board[y,x] + len(adj_vars) - board[y,x]
+                problem.addConstraint(constraint.ExactSumConstraint(val), adj_vars)
+
+    # Sum of each scan must be less than 200, since only 1 light per scan
+    # For horizontal scans 
+    for y in range(SIZE):
+        curr_scan = []
+        for x in range(SIZE):
+            if board[y,x] == -1: curr_scan.append(str([y,x]))
+            else:
+                if len(curr_scan) > 0:
+                    problem.addConstraint(constraint.MaxSumConstraint(199), curr_scan)
+                curr_scan = []
+        if len(curr_scan) > 0:
+            problem.addConstraint(constraint.MaxSumConstraint(199), curr_scan)
+    # For vertical scans 
+    for x in range(SIZE):
+        curr_scan = []
+        for y in range(SIZE):
+            if board[y,x] == -1: curr_scan.append(str([y,x]))
+            else:
+                if len(curr_scan) > 0:
+                    problem.addConstraint(constraint.MaxSumConstraint(199), curr_scan)
+                curr_scan = []
+        if len(curr_scan) > 0:
+            problem.addConstraint(constraint.MaxSumConstraint(199), curr_scan)
+
+    # For each point, pair of scans passing through point must contain 100 at least once
+    scans = []
+    for y in range(SIZE):
+        for x in range(SIZE):
+            if board[y,x] != -1: continue
+            scan = []
+            scan.append(str([y,x]))
+            # Up
+            for i in reversed(range(y)):
+                if board[i,x] >= 0: break
+                else: scan.append(str([i,x]))
+            # Down
+            for i in range(y+1,SIZE):
+                if board[i,x] >= 0: break
+                else: scan.append(str([i,x]))
+            # Left
+            for i in reversed(range(x)):
+                if board[y,i] >= 0: break
+                else: scan.append(str([y,i]))
+            # Right
+            for i in range(x+1,SIZE):
+                if board[y,i] >= 0: break
+                else: scan.append(str([y,i]))
+            scan.sort()
+            if scan not in scans: scans.append(scan)
+    for scan in scans:
+        problem.addConstraint(constraint.SomeInSetConstraint([100]), scan)
+    
+    solution = problem.getSolution()
+
+    for y in range(SIZE):
+        for x in range(SIZE):
+            if str([y,x]) in solution:
+                board[y,x] = -1 if solution[str([y,x])] == 1 else 100
+    return board
 
 if __name__ == "__main__":
     board = np.array([
@@ -120,7 +98,6 @@ if __name__ == "__main__":
         [-1, -1, -1, -1, -1, -1,  9,  9,  2, -1],
         [ 9,  9,  1, -1, -1, -1, -1, -1, -1, -1]
     ])
-    board = board[:SIZE,:SIZE]
-    print("Input board:\n", board)
-    print("Solution:\n", solve(board))
-    print(COUNT)
+
+    res = solve(board)
+    print(res)
