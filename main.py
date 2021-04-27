@@ -54,10 +54,12 @@ def find_solution(ptype, features):
         solution = Sudoku_AI.solve(features['board'])
         visualized = Sudoku_Features.visualize_board(features['cropped'], solution)
         cv.imshow('Sudoku solved', visualized)
+        cv.waitKey()
     elif ptype == 'akari':
         solution = Akari_AI.solve(features['board'])
         visualized = Akari_Features.visualize_board(features['cropped'], solution)
         cv.imshow('Akari solved', visualized)
+        cv.waitKey()
     return solution
 
 if __name__ == "__main__":
@@ -70,14 +72,16 @@ if __name__ == "__main__":
 
     image = cv.imread(args.filename, cv.IMREAD_UNCHANGED)
     cv.imshow('Image', image)
+    cv.waitKey()
 
+    print("Detecting puzzle type...")
     ptype = get_puzzle_type(image)
-    print("Detected puzzle type: ", ptype)
+    print("Found puzzle type: ", ptype)
 
+    print("Detecting puzzle features...")
     features = get_features(ptype, ocr_model, image)
-    print("Detected puzzle features")
+    print("Found puzzle features.")
 
+    print("Solving puzzle...")
     solution = find_solution(ptype, features)
     print("Found solution:\n", solution)
-
-    cv.waitKey()
