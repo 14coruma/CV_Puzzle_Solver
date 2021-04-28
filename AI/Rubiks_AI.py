@@ -1,5 +1,5 @@
+# Rubiks cube solver thanks to https://github.com/muodov/kociemba
 import kociemba
-
 
 # Given six faces of a rubiks cube, return as a single string
 # Faces should be ordered as follows:

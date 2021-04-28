@@ -34,6 +34,9 @@ Andrew Corum
 [table generator](https://www.tablesgenerator.com/markdown_tables)
 
 
+## Dependencies
+* https://github.com/muodov/kociemba
+
 ## References
 * https://imagemagick.org/
 * https://docs.opencv.org/

@@ -48,10 +48,12 @@ def get_features(ptype, ocr_model, image):
         features['board'] = board
     elif ptype == 'rubiks':
         faces = []
-        print("Need to see each side of cube...")
-        for side in ['Front', 'Right', 'Back', 'Left', 'Upper', 'Down']:
-            filename = input("  {} filename: ".format(side))
-            faces.append(Rubiks_Features.face_from_filename(filename))
+        print("Need name of folder where Rubik's cube .jpg face images are located...")
+        folder = input("  ./Images/")
+        face_names = ['front', 'right', 'back', 'left', 'upper', 'down']
+        for name in face_names:
+            faces.append(Rubiks_Features.face_from_filename('Images/' + folder + name + '.jpg'))
+            print(faces[-1])
         features['faces'] = faces
     return features
 
@@ -83,6 +85,7 @@ if __name__ == "__main__":
     image = cv.imread(args.filename, cv.IMREAD_UNCHANGED)
     cv.imshow('Image', image)
     cv.waitKey()
+    cv.destroyWindow('Image')
 
     print("Detecting puzzle type...")
     ptype = get_puzzle_type(image)
