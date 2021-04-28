@@ -3,12 +3,14 @@ import numpy as np
 import sys
 
 import cv2 as cv
+from scipy.spatial import KDTree
+
 
 if __name__ == "__main__":
     rubiks_image_folder = "Images/rubiks_0/"
     debug = True
     #if len(sys.argv) > 1: filename = sys.argv[1]
-    filename = "Images/rubiks_0/rubiks_0_2.jpg"
+    filename = "Images/rubiks_0/rubiks_0_1.jpg"
     img = cv.imread(filename)
 
     # Threshold image for very colorful or white pixels (like you'd expect on a rubik's cube)
@@ -43,6 +45,35 @@ if __name__ == "__main__":
             squares.append(box)
     squares = sorted(squares, key=cv.contourArea)[-9:]
 
-    cv.drawContours(img, squares, -1, (0,0,255), 2)
-    cv.imshow("preview", img)
-    cv.waitKey()
+    #cv.drawContours(img, squares, -1, (0,0,255), 2)
+    #cv.imshow("preview", img)
+    #cv.waitKey()
+
+    # Identify color of each square
+    # Idea to use KDTree for nearest color lookup: https://medium.com/codex/rgb-to-color-names-in-python-the-robust-way-ec4a9d97a01f
+    # List of possible rubik's cube BGR colors:
+    bgr_names = ['red', 'green', 'blue', 'yellow', 'orange', 'white']
+    bgr_colors = [
+        [0,0,255],    # Red
+        [0,255,0],    # Green
+        [255,0,0],    # Blue
+        [0,255,255],  # Yellow
+        [0,165,255],  # Orange
+        [255,255,255] # White
+    ]
+    kdt = KDTree(bgr_colors)
+    for square in squares:
+        # Ref: https://stackoverflow.com/questions/33234363/access-pixel-values-within-a-contour-boundary-using-opencv-in-python
+        # Create a mask image that contains the contour filled in
+        cimg = np.zeros_like(img)
+        cv.drawContours(cimg, [square], 0, color=255, thickness=-1)
+        pts = np.where(cimg == 255)
+        # Find average color in img within this mask
+        pixels = img[pts[0], pts[1]]
+        avg = np.average(pixels, axis=0)
+        # Lookup nearest BRG color
+        dist, idx = kdt.query(avg)
+        print(bgr_names[idx])
+        cv.drawContours(img, [square], 0, (0,0,0), 2)
+        cv.imshow("preview", img)
+        cv.waitKey()
