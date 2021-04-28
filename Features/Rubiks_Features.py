@@ -61,6 +61,8 @@ if __name__ == "__main__":
         [235,235,235] # White
     ]
     kdt = KDTree(bgr_colors)
+
+    colors = []
     for square in squares:
         # Ref: https://stackoverflow.com/questions/33234363/access-pixel-values-within-a-contour-boundary-using-opencv-in-python
         # Create a mask image that contains the contour filled in
@@ -72,7 +74,21 @@ if __name__ == "__main__":
         avg = np.average(pixels, axis=0)
         # Lookup nearest BRG color
         dist, idx = kdt.query(avg)
-        print(bgr_names[idx])
-        cv.drawContours(img, [square], 0, (0,0,0), 2)
-        cv.imshow("preview", img)
-        cv.waitKey()
+        colors.append(idx)
+
+    # Find relative positions of squares, then place in grid
+    cube_face = np.zeros((3,3))
+    minX, minY, maxX, maxY = float('inf'), float('inf'), 0, 0    
+    for square in squares: 
+        center = np.average(square, axis=0)
+        minX = min(center[0], minX)
+        minY = min(center[1], minY)
+        maxX = max(center[0], maxX)
+        maxY = max(center[1], maxY)
+    for i in range(len(squares)):
+        center = np.average(squares[i], axis=0)
+        relativeX = round(2*(center[0] - minX) / (maxX - minX))
+        relativeY = round(2*(center[1] - minY) / (maxY - minY))
+        cube_face[relativeY, relativeX] = colors[i]
+
+    print(cube_face)
