@@ -8,7 +8,6 @@ from scipy.spatial import KDTree
 
 if __name__ == "__main__":
     rubiks_image_folder = "Images/rubiks_0/"
-    debug = True
     #if len(sys.argv) > 1: filename = sys.argv[1]
     filename = "Images/rubiks_0/rubiks_0_1.jpg"
     img = cv.imread(filename)
@@ -16,8 +15,8 @@ if __name__ == "__main__":
     # Threshold image for very colorful or white pixels (like you'd expect on a rubik's cube)
     blurred = cv.GaussianBlur(img, (3,3), cv.BORDER_REFLECT)
     hsv = cv.cvtColor(blurred, cv.COLOR_BGR2HSV)
-    color = cv.inRange(hsv, (0,150,150), (180,255,255))
-    white = cv.inRange(hsv, (0,0,200), (180,10,255))
+    color = cv.inRange(hsv, (0,100,150), (180,255,255)) # HSV Colors (any H, high S, high V)
+    white = cv.inRange(hsv, (0,0,200), (180,10,255))    # HSV White (any H, low S, high V)
     thresh = cv.bitwise_or(color, white)
     cv.imshow("color", thresh)
     cv.waitKey()
@@ -54,12 +53,12 @@ if __name__ == "__main__":
     # List of possible rubik's cube BGR colors:
     bgr_names = ['red', 'green', 'blue', 'yellow', 'orange', 'white']
     bgr_colors = [
-        [0,0,255],    # Red
-        [0,255,0],    # Green
-        [255,0,0],    # Blue
-        [0,255,255],  # Yellow
-        [0,165,255],  # Orange
-        [255,255,255] # White
+        [20,20,235],  # Red
+        [20,235,20],  # Green
+        [235,20,20],  # Blue
+        [20,235,235], # Yellow
+        [20,165,235], # Orange
+        [235,235,235] # White
     ]
     kdt = KDTree(bgr_colors)
     for square in squares:
