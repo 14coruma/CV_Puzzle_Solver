@@ -5,26 +5,20 @@ import sys
 import cv2 as cv
 from scipy.spatial import KDTree
 
-
-if __name__ == "__main__":
-    rubiks_image_folder = "Images/rubiks_0/"
-    #if len(sys.argv) > 1: filename = sys.argv[1]
-    filename = "Images/rubiks_0/rubiks_0_1.jpg"
-    img = cv.imread(filename)
-
+def get_squares(img, debug=False):
     # Threshold image for very colorful or white pixels (like you'd expect on a rubik's cube)
     blurred = cv.GaussianBlur(img, (3,3), cv.BORDER_REFLECT)
     hsv = cv.cvtColor(blurred, cv.COLOR_BGR2HSV)
     color = cv.inRange(hsv, (0,100,150), (180,255,255)) # HSV Colors (any H, high S, high V)
     white = cv.inRange(hsv, (0,0,200), (180,10,255))    # HSV White (any H, low S, high V)
     thresh = cv.bitwise_or(color, white)
-    cv.imshow("color", thresh)
-    cv.waitKey()
+    if debug:
+        cv.imshow("color", thresh)
+        cv.waitKey()
 
     # Edge detection
     blurred = cv.GaussianBlur(thresh, (3,3), cv.BORDER_REFLECT)
     edges = cv.Canny(blurred, 25, 250)
-    cv.imshow("edges", edges)
 
     # Get contours
     contours,_ = cv.findContours(edges, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
@@ -43,11 +37,15 @@ if __name__ == "__main__":
         if cnt_area > .9 * box_area:
             squares.append(box)
     squares = sorted(squares, key=cv.contourArea)[-9:]
+    if debug:
+        img_copy = img.copy()
+        cv.drawContours(img_copy, squares, -1, (0,0,255), 2)
+        cv.imshow("squares", img_copy)
+        cv.waitKey()
 
-    #cv.drawContours(img, squares, -1, (0,0,255), 2)
-    #cv.imshow("preview", img)
-    #cv.waitKey()
+    return squares
 
+def get_colors(img, squares):
     # Identify color of each square
     # Idea to use KDTree for nearest color lookup: https://medium.com/codex/rgb-to-color-names-in-python-the-robust-way-ec4a9d97a01f
     # List of possible rubik's cube BGR colors:
@@ -76,6 +74,9 @@ if __name__ == "__main__":
         dist, idx = kdt.query(avg)
         colors.append(idx)
 
+    return colors
+
+def label_face(squares, colors):
     # Find relative positions of squares, then place in grid
     cube_face = np.zeros((3,3))
     minX, minY, maxX, maxY = float('inf'), float('inf'), 0, 0    
@@ -90,5 +91,17 @@ if __name__ == "__main__":
         relativeX = round(2*(center[0] - minX) / (maxX - minX))
         relativeY = round(2*(center[1] - minY) / (maxY - minY))
         cube_face[relativeY, relativeX] = colors[i]
+    return cube_face
+
+if __name__ == "__main__":
+    debug = True
+
+    rubiks_image_folder = "Images/rubiks_0/"
+    filename = "Images/rubiks_0/rubiks_0_0.jpg"
+    img = cv.imread(filename)
+
+    squares = get_squares(img, debug=debug)
+    colors = get_colors(img, squares)
+    cube_face = label_face(squares, colors)
 
     print(cube_face)
