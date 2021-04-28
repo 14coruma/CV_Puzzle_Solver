@@ -6,8 +6,8 @@ import cv2 as cv
 from tensorflow.keras import models
 
 import Classifier
-from AI import Akari_AI, Sudoku_AI
-from Features import Akari_Features, Sudoku_Features
+from AI import Akari_AI, Sudoku_AI, Rubiks_AI
+from Features import Akari_Features, Sudoku_Features, Rubiks_Features
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -46,6 +46,13 @@ def get_features(ptype, ocr_model, image):
         cv.imshow('Akari features', visualized)
         features['cropped'] = cropped
         features['board'] = board
+    elif ptype == 'rubiks':
+        faces = []
+        print("Need to see each side of cube...")
+        for side in ['Front', 'Right', 'Back', 'Left', 'Upper', 'Down']:
+            filename = input("  {} filename: ".format(side))
+            faces.append(Rubiks_Features.face_from_filename(filename))
+        features['faces'] = faces
     return features
 
 def find_solution(ptype, features):
@@ -60,6 +67,9 @@ def find_solution(ptype, features):
         visualized = Akari_Features.visualize_board(features['cropped'], solution)
         cv.imshow('Akari solved', visualized)
         cv.waitKey()
+    elif ptype == 'rubiks':
+        faceletstr = Rubiks_AI.faceletstr_from_faces(features['faces'])
+        solution = Rubiks_AI.solve(faceletstr)
     return solution
 
 if __name__ == "__main__":

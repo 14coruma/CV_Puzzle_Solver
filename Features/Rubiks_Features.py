@@ -51,7 +51,7 @@ def get_colors(img, squares):
     # List of possible rubik's cube BGR colors:
     bgr_names = ['red', 'green', 'blue', 'yellow', 'orange', 'white']
     bgr_colors = [
-        [20,20,235],  # Red
+        [20,20,235],  # Red 
         [20,235,20],  # Green
         [235,20,20],  # Blue
         [20,235,235], # Yellow
@@ -72,13 +72,13 @@ def get_colors(img, squares):
         avg = np.average(pixels, axis=0)
         # Lookup nearest BRG color
         dist, idx = kdt.query(avg)
-        colors.append(idx)
+        colors.append(bgr_names[idx])
 
     return colors
 
 def label_face(squares, colors):
     # Find relative positions of squares, then place in grid
-    cube_face = np.zeros((3,3))
+    cube_face = np.empty((3,3), dtype=str)
     minX, minY, maxX, maxY = float('inf'), float('inf'), 0, 0    
     for square in squares: 
         center = np.average(square, axis=0)
@@ -91,6 +91,13 @@ def label_face(squares, colors):
         relativeX = round(2*(center[0] - minX) / (maxX - minX))
         relativeY = round(2*(center[1] - minY) / (maxY - minY))
         cube_face[relativeY, relativeX] = colors[i]
+    return cube_face
+
+def face_from_filename(filename):
+    img = cv.imread(filename)
+    squares = get_squares(img)
+    colors = get_colors(img, squares)
+    cube_face = label_face(squares, colors)
     return cube_face
 
 if __name__ == "__main__":
