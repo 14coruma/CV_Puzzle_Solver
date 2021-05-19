@@ -7,8 +7,8 @@ Andrew Corum
 - [x] Topic idea
 - [x] Project proposal
 - [x] Progress report
-- [ ] Final submission
-- [ ] Presentation
+- [x] Final submission
+- [x] Presentation
 
 ## CNN Trials
 | Test Accuracy | Epochs | Conv Layers                                                                      | Dropout                      | Dense Layers | BatchNorm? |
